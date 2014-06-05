@@ -5797,11 +5797,15 @@ class GeoIP {
         "--"
     );
 
+    /**
+     * 
+     * @param type $file
+     * @throws \Exception
+     */
     public function geoip_load_shared_mem($file) {
         $fp = fopen($file, "rb");
         if (!$fp) {
-            print "error opening $file: $php_errormsg\n";
-            exit;
+            throw new \Exception("error opening $file: $php_errormsg");
         }
         $s_array = fstat($fp);
         $size = $s_array['size'];
@@ -5905,13 +5909,17 @@ class GeoIP {
      * @param type $filename
      * @param type $flags
      * @return \MaxmindLegacy\GeoIP
+     * @throws Exception
      */
     public function geoip_open($filename, $flags) {
         $this->flags = $flags;
         if ($this->flags & self::GEOIP_SHARED_MEMORY) {
             $this->shmid = @shmop_open(GEOIP_SHM_KEY, "a", 0, 0);
         } else {
-            $this->filehandle = fopen($filename, "rb") or die("Can not open $filename\n");
+            $this->filehandle = fopen($filename, "rb");
+            if(!$this->filehandle){
+                throw new \Exception("Can not open $filename");
+            }
             if ($this->flags & self::GEOIP_MEMORY_CACHE) {
                 $s_array = fstat($this->filehandle);
                 $this->memory_buffer = fread($this->filehandle, $s_array['size']);
@@ -5922,6 +5930,10 @@ class GeoIP {
         return $this;
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function geoip_close() {
         if ($this->flags & self::GEOIP_SHARED_MEMORY) {
             return true;
@@ -6053,8 +6065,11 @@ class GeoIP {
                                 $this->shmid, 2 * $this->record_length * $offset, 2 * $this->record_length
                 );
             } else {
-                fseek($this->filehandle, 2 * $this->record_length * $offset, SEEK_SET) == 0
-                        or die("fseek failed");
+                $try = (fseek($this->filehandle, 2 * $this->record_length * $offset, SEEK_SET) == 0);
+                if(!$try){
+                    throw new \Exception("File search error");
+                }
+                        
                 $buf = fread($this->filehandle, 2 * $this->record_length);
             }
             $x = array(0, 0);
@@ -6083,6 +6098,12 @@ class GeoIP {
         return false;
     }
 
+    /**
+     * 
+     * @param type $ipnum
+     * @return boolean
+     * @throws \Exception
+     */
     public function _geoip_seek_country($ipnum) {
         $offset = 0;
         for ($depth = 31; $depth >= 0; --$depth) {
@@ -6095,8 +6116,9 @@ class GeoIP {
                                 $this->shmid, 2 * $this->record_length * $offset, 2 * $this->record_length
                 );
             } else {
-                fseek($this->filehandle, 2 * $this->record_length * $offset, SEEK_SET) == 0
-                        or die("fseek failed");
+                if(!(fseek($this->filehandle, 2 * $this->record_length * $offset, SEEK_SET) == 0)){
+                    throw new \Exception("fseek failed");
+                }
                 $buf = fread($this->filehandle, 2 * $this->record_length);
             }
             $x = array(0, 0);
