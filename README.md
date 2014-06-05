@@ -18,7 +18,7 @@
     "repositories":[
         {
             "type":"git",
-            "url":"https://bitbucket.org/kubrey/maxmind"
+            "url":"https://bitbucket.org/kubrey/maxgeo"
         },
     ]
 }
