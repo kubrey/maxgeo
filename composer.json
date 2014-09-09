@@ -1,7 +1,7 @@
 {
     "name":"kubrey/maxgeo",
     "description": "Ipgeobase PHP API",
-    "keywords": [ "geoip", "geolocation", "maxmind","maxmind legacy" ],
+    "keywords": [ "geoip", "geolocation", "maxmind","maxmind legacy","kubrey" ],
     "require":{
         "php":">=5.3.0"
     },
